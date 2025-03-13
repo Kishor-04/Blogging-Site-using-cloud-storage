@@ -3,10 +3,8 @@ import { Editor } from '@tinymce/tinymce-react';
 import axios from 'axios';
 
 export default function TextEditor() {
-  // ✅ State to manage content
   const [content, setContent] = useState('');
 
-  // ✅ Load content from localStorage when component mounts
   useEffect(() => {
     const savedContent = localStorage.getItem('editorContent');
     if (savedContent) {
@@ -14,17 +12,16 @@ export default function TextEditor() {
     }
   }, []);
 
-  // ✅ Function to handle content change
   const handleEditorChange = (newContent) => {
     setContent(newContent);
-    localStorage.setItem('editorContent', newContent); // Save to localStorage
+    localStorage.setItem('editorContent', newContent);
   };
 
   return (
     <Editor
-      apiKey="et7or7bsvy849389p2m0bhfrwtiz8s69ps0phg8sdhnr2emi"
-      value={content} // Load saved content
-      onEditorChange={handleEditorChange} // Save content on change
+      apiKey={import.meta.env.VITE_TINYMCE_API_KEY} // ✅ Securely using Vite env variables
+      value={content}
+      onEditorChange={handleEditorChange}
       init={{
         plugins:
           'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
@@ -34,8 +31,6 @@ export default function TextEditor() {
         file_picker_types: 'file image media',
         image_title: true,
         automatic_uploads: true,
-
-        // ✅ Upload Image to Cloudinary
         file_picker_callback: (cb, value, meta) => {
           if (meta.filetype === 'image') {
             const input = document.createElement('input');
@@ -46,16 +41,14 @@ export default function TextEditor() {
               const file = this.files[0];
               const formData = new FormData();
               formData.append('file', file);
-              formData.append('upload_preset', 'cloudinary'); // Change this
-              formData.append('cloud_name', 'dy5lpmocq'); // Change this
+              formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+              formData.append('cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
 
               try {
                 const response = await axios.post(
-                  'https://api.cloudinary.com/v1_1/dy5lpmocq/image/upload', // Change this
+                  `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
                   formData
                 );
-
-                // ✅ Insert Cloudinary image URL into TinyMCE editor
                 cb(response.data.secure_url, { title: file.name });
               } catch (error) {
                 console.error('Image upload failed:', error);
