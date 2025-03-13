@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const BlogSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true },
-  thumbnailUrl: { type: String, required: true }, // Store Cloudinary URL
+  thumbnail: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });
 
