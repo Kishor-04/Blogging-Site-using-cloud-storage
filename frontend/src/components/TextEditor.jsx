@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from 'axios';
 
 export default function TextEditor() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { thumbnailUrl, title } = location.state || {};
   const [content, setContent] = useState('');
+
+  if (!thumbnailUrl || !title) {
+    return <p className="text-center text-gray-500 text-lg mt-10">No Thumbnail or Title Found!</p>;
+  }
 
   useEffect(() => {
     const savedContent = localStorage.getItem('editorContent');
@@ -17,18 +25,25 @@ export default function TextEditor() {
     localStorage.setItem('editorContent', newContent);
   };
 
-  const handleSave = async () => {
+   const handleSave = async () => {
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/save`, { htmlContent: content });
-      alert('✅ Content saved successfully!');
+      await axios.post(`${import.meta.env.VITE_API_URL}/save`, {
+        title,
+        htmlContent: content,
+        thumbnailUrl,
+      });
+      alert("✅ Blog saved successfully!");
+      navigate("/dashboard");
     } catch (error) {
-      console.error('❌ Error saving content:', error);
-      alert('Failed to save content. Please try again.');
+      console.error("❌ Error saving blog:", error);
+      alert("Failed to save blog. Try again.");
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto p-4 bg-white rounded-lg shadow-lg">
+      <img src={thumbnailUrl} alt="Thumbnail" className="w-full h-48 object-cover rounded" />
+      <h2 className="text-2xl font-semibold mt-4 text-center">{title}</h2>
       <h2 className="text-xl font-semibold mb-4 text-gray-800">Rich Text Editor</h2>
       <div className="border border-gray-300 rounded-md overflow-hidden">
         <Editor
