@@ -6,7 +6,7 @@ import axios from 'axios';
 export default function TextEditor() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { thumbnailUrl, title } = location.state || {};
+  const { _id, title, thumbnailUrl, isEditing } = location.state || {}; // ✅ Get `_id` and `isEditing`
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -15,26 +15,44 @@ export default function TextEditor() {
   }
 
   useEffect(() => {
-    const savedContent = localStorage.getItem('editorContent');
-    if (savedContent) {
-      setContent(savedContent);
+    if (isEditing && _id) {
+      // ✅ Fetch existing blog content if editing
+      const fetchContent = async () => {
+        try {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/content/${_id}`);
+          setContent(res.data.htmlContent);
+        } catch (error) {
+          console.error("❌ Error fetching blog:", error);
+        }
+      };
+      fetchContent();
     }
-  }, []);
+  }, [_id, isEditing]);
 
   const handleEditorChange = (newContent) => {
     setContent(newContent);
-    localStorage.setItem('editorContent', newContent);
   };
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/save`, {
-        title,
-        htmlContent: content,
-        thumbnailUrl,
-      });
-      alert("✅ Blog saved successfully!");
+      if (isEditing) {
+        // ✅ Update existing blog
+        await axios.put(`${import.meta.env.VITE_API_URL}/content/${_id}`, {
+          title,
+          htmlContent: content,
+          thumbnailUrl,
+        });
+        alert("✅ Blog updated successfully!");
+      } else {
+        // ✅ Create new blog
+        await axios.post(`${import.meta.env.VITE_API_URL}/save`, {
+          title,
+          htmlContent: content,
+          thumbnailUrl,
+        });
+        alert("✅ Blog saved successfully!");
+      }
       navigate("/dashboard");
     } catch (error) {
       console.error("❌ Error saving blog:", error);
@@ -116,12 +134,10 @@ export default function TextEditor() {
       </div>
       <button
         onClick={handleSave}
-        className={`mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg shadow-md transition duration-300 ${
-          loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
-        }`}
+        className={`mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg shadow-md transition duration-300 ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"}`}
         disabled={loading}
       >
-        {loading ? "Saving..." : "Save Content"}
+        {loading ? "Saving..." : isEditing ? "Update Content" : "Save Content"}
       </button>
     </div>
   );
