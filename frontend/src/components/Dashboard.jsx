@@ -29,12 +29,46 @@ export default function Dashboard() {
           {contentList.map((content) => (
             <div
               key={content._id}
-              className="bg-white shadow-lg rounded-xl p-6 cursor-pointer hover:shadow-xl transition-transform transform hover:scale-105"
-              onClick={() => navigate(`/blog/${content._id}`)}
+              className="bg-white shadow-lg rounded-xl p-6 hover:shadow-xl transition-transform transform hover:scale-105"
             >
-              <img src={content.thumbnailUrl} alt="Thumbnail" className="w-full h-32 object-cover rounded mb-4" />
+              <img
+                src={content.thumbnailUrl}
+                alt="Thumbnail"
+                className="w-full h-40 object-cover rounded mb-4 cursor-pointer"
+                onClick={() => navigate(`/blog/${content._id}`)} // Navigate to blog page
+              />
               <h3 className="text-xl font-bold">{content.title}</h3>
               <p className="text-gray-500 text-sm mt-1">🕒 {new Date(content.createdAt).toLocaleString()}</p>
+
+              {/* Button Container */}
+              <div className="mt-4 flex justify-between">
+                {/* Edit Button */}
+                <button
+                  onClick={() => navigate("/", { state: { ...content, isEditing: true } })}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-600 transition"
+                >
+                  ✏️ Edit
+                </button>
+
+                {/* Delete Button */}
+                <button
+                  onClick={async () => {
+                    if (window.confirm("Are you sure you want to delete this blog?")) {
+                      try {
+                        await axios.delete(`${import.meta.env.VITE_API_URL}/content/${content._id}`);
+                        setContentList(contentList.filter((c) => c._id !== content._id));
+                        alert("Blog deleted successfully!");
+                      } catch (error) {
+                        console.error("❌ Error deleting blog:", error);
+                        alert("Failed to delete blog.");
+                      }
+                    }
+                  }}
+                  className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 transition"
+                >
+                  ❌ Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
