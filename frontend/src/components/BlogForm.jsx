@@ -8,21 +8,20 @@ export default function BlogForm() {
   const [title, setTitle] = useState("");
   const navigate = useNavigate();
 
-  // Handle Thumbnail Upload
+  // Handle Thumbnail Upload (Now to Backend Instead of Cloudinary Directly)
   const handleThumbnailChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
 
     try {
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        formData
-      );
-      setThumbnailUrl(response.data.secure_url);
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setThumbnailUrl(response.data.url); // Get URL from backend
       setThumbnail(file);
     } catch (error) {
       console.error("❌ Thumbnail upload failed:", error);
