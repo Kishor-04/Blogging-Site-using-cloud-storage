@@ -21,16 +21,24 @@ export default function TextEditor() {
         try {
           const res = await axios.get(`${import.meta.env.VITE_API_URL}/content/${_id}`);
           setContent(res.data.htmlContent);
+          localStorage.setItem(`editorContent_${_id}`, res.data.htmlContent); // Save to localStorage
         } catch (error) {
           console.error("❌ Error fetching blog:", error);
         }
       };
       fetchContent();
+    }else {
+      // ✅ Load from localStorage if available
+      const savedContent = localStorage.getItem(`editorContent_${_id}`);
+      if (savedContent) {
+        setContent(savedContent);
+      }
     }
   }, [_id, isEditing]);
 
   const handleEditorChange = (newContent) => {
     setContent(newContent);
+    localStorage.setItem(`editorContent_${_id}`, newContent);
   };
 
   const handleSave = async () => {
