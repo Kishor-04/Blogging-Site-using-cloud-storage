@@ -27,7 +27,7 @@ export default function TextEditor() {
         }
       };
       fetchContent();
-    }else {
+    } else {
       // ✅ Load from localStorage if available
       const savedContent = localStorage.getItem(`editorContent_${_id}`);
       if (savedContent) {
@@ -82,8 +82,27 @@ export default function TextEditor() {
             plugins:
               'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
             toolbar:
-              'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+              'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | alignleft aligncenter alignright lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            // ✅ Add alignment options for images
+            contextmenu: 'link image table',
+            image_caption: true,
+            image_description: false,
+            image_advtab: true,
             branding: false,
+
+            image_class_list: [
+              { title: 'None', value: '' },
+              { title: 'Align Left', value: 'align-left' },
+              { title: 'Align Center', value: 'align-center' },
+              { title: 'Align Right', value: 'align-right' }
+            ],
+        
+            content_style: `
+              .align-left { float: left; margin-right: 10px; }
+              .align-center { display: block; margin: 0 auto; }
+              .align-right { float: right; margin-left: 10px; }
+            `,
+            
             images_upload_handler: async (blobInfo, success, failure) => {
               const formData = new FormData();
               formData.append('file', blobInfo.blob());
@@ -117,7 +136,7 @@ export default function TextEditor() {
                   const file = this.files[0];
                   const formData = new FormData();
                   formData.append('file', file);
-                
+
                   try {
                     const response = await axios.post(
                       `${import.meta.env.VITE_API_URL}/upload/editor-image`,
